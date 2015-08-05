@@ -1,0 +1,26 @@
+3518419ms th_a       application.cpp:221           operator()           ] Initializing database...
+3518444ms th_a       application.cpp:64            create_example_genes ] Allocating all stake to 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
+3518456ms th_a       thread.cpp:95                 thread               ] name:p2p tid:139924855707392
+3518459ms th_a       application.cpp:122           reset_p2p_node       ] Configured p2p node to listen on 127.0.0.1:3939
+3518960ms th_a       application.cpp:221           operator()           ] Initializing database...
+3518960ms th_a       application.cpp:64            create_example_genes ] Allocating all stake to 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
+3518977ms th_a       thread.cpp:95                 thread               ] name:p2p tid:139924823713536
+3518980ms th_a       application.cpp:110           reset_p2p_node       ] Adding seed node 127.0.0.1:3939
+3518983ms th_a       application.cpp:122           reset_p2p_node       ] Configured p2p node to listen on 127.0.0.1:4040
+3518986ms th_a       application.cpp:463           get_blockchain_synop ] reference_point: 0000000000000000000000000000000000000000 number_of_blocks_after_reference_point: 0 result: ["0000000000000000000000000000000000000000"] 
+3518987ms th_a       application.cpp:463           get_blockchain_synop ] reference_point: 0000000000000000000000000000000000000000 number_of_blocks_after_reference_point: 0 result: ["0000000000000000000000000000000000000000"] 
+3519491ms th_a       application.cpp:354           handle_transaction   ] Got transaction from network
+3519996ms th_a       application.cpp:414           get_item             ] Request for item {"item_type":1001,"item_hash":"00000001c4b0b78983f7e719104039a682218e0b"}
+3519996ms th_a       application.cpp:422           get_item             ] Serving up block #1
+3519997ms th_a       application.cpp:319           handle_block         ] Got block #1 from network
+3520499ms th_a       thread.cpp:115                ~thread              ] calling quit() on p2p
+3520499ms th_a       thread.cpp:160                quit                 ] destroying boost thread 139924823713536
+3520616ms th_a       thread.cpp:115                ~thread              ] calling quit() on p2p
+3520616ms th_a       thread.cpp:160                quit                 ] destroying boost thread 139924855707392
+3520617ms p2p        thread.cpp:246                exec                 ] thread canceled: 9 canceled_exception: Canceled
+cancellation reason: [none given]
+    {"reason":"[none given]"}
+    p2p  thread_d.hpp:463 start_next_fiber
+Running 1 test case...
+
+*** No errors detected

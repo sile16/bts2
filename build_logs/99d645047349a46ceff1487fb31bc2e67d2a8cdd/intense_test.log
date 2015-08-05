@@ -1,0 +1,95 @@
+Random number generator seeded to 1438721436
+3036280ms th_a       block_tests.cpp:170           test_method          ] trx: {"ref_block_num":2,"ref_block_prefix":2493057150,"expiration":"2015-05-15T14:28:05","operations":[[5,{"fee":{"amount":0,"asset_id":"1.3.0"},"registrar":"1.2.15","referrer":"1.2.0","referrer_percent":0,"name":"alice","owner":{"weight_threshold":1,"account_auths":[],"key_auths":[["GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX",1]],"address_auths":[]},"active":{"weight_threshold":1,"account_auths":[],"key_auths":[["GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX",1]],"address_auths":[]},"options":{"memo_key":"GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX","voting_account":"1.2.0","num_witness":0,"num_committee":0,"votes":[],"extensions":[]},"extensions":[]}]],"extensions":[],"signatures":[]} 
+3036281ms th_a       block_tests.cpp:235           test_method          ] e.to_detail_string(): 10 assert_exception: Assert Exception
+fee_paying_account->is_lifetime_member(): 
+    {}
+    th_a  account_evaluator.cpp:46 do_evaluate
+
+    {"op":{"fee":{"amount":0,"asset_id":"1.3.0"},"registrar":"1.2.15","referrer":"1.2.0","referrer_percent":0,"name":"alice","owner":{"weight_threshold":1,"account_auths":[],"key_auths":[["GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX",1]],"address_auths":[]},"active":{"weight_threshold":1,"account_auths":[],"key_auths":[["GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX",1]],"address_auths":[]},"options":{"memo_key":"GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX","voting_account":"1.2.0","num_witness":0,"num_committee":0,"votes":[],"extensions":[]},"extensions":[]}}
+    th_a  account_evaluator.cpp:84 do_evaluate
+
+    {}
+    th_a  evaluator.cpp:42 start_evaluate
+
+    {}
+    th_a  db_block.cpp:556 apply_operation
+
+    {"trx":{"ref_block_num":2,"ref_block_prefix":2493057150,"expiration":"2015-05-15T14:28:05","operations":[[5,{"fee":{"amount":0,"asset_id":"1.3.0"},"registrar":"1.2.15","referrer":"1.2.0","referrer_percent":0,"name":"alice","owner":{"weight_threshold":1,"account_auths":[],"key_auths":[["GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX",1]],"address_auths":[]},"active":{"weight_threshold":1,"account_auths":[],"key_auths":[["GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX",1]],"address_auths":[]},"options":{"memo_key":"GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX","voting_account":"1.2.0","num_witness":0,"num_committee":0,"votes":[],"extensions":[]},"extensions":[]}]],"extensions":[],"signatures":[]}}
+    th_a  db_block.cpp:539 _apply_transaction
+
+    {"trx":{"ref_block_num":2,"ref_block_prefix":2493057150,"expiration":"2015-05-15T14:28:05","operations":[[5,{"fee":{"amount":0,"asset_id":"1.3.0"},"registrar":"1.2.15","referrer":"1.2.0","referrer_percent":0,"name":"alice","owner":{"weight_threshold":1,"account_auths":[],"key_auths":[["GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX",1]],"address_auths":[]},"active":{"weight_threshold":1,"account_auths":[],"key_auths":[["GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX",1]],"address_auths":[]},"options":{"memo_key":"GPH5pFFZpHHqRGXqhQ9jhm5cc1b2AgPQRzdP66DLSuNfiqjH7FboX","voting_account":"1.2.0","num_witness":0,"num_committee":0,"votes":[],"extensions":[]},"extensions":[]}]],"extensions":[],"signatures":[]}}
+    th_a  db_block.cpp:192 push_transaction 
+Running 5 test cases...
+update_account_keys:  this test will take a few minutes...
+011
+unknown location(0): fatal error in "update_account_keys": unknown type
+/build/graphene/tests/common/database_fixture.cpp(197): last checkpoint
+3038425ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 16384 
+3040298ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 32768 
+3042173ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 49152 
+3044048ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 65536 
+3045921ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 81920 
+3047797ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 98304 
+3049693ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 114688 
+3051567ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 131072 
+3053444ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 147456 
+3055330ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 163840 
+3057208ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 180224 
+3059084ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 196608 
+3060961ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 212992 
+3062834ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 229376 
+3064708ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 245760 
+3066583ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 262144 
+3068459ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 278528 
+3070331ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 294912 
+3072330ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 311296 
+3074204ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 327680 
+3076075ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 344064 
+3077951ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 360448 
+3079824ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 376832 
+3081698ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 393216 
+3083574ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 409600 
+3085445ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 425984 
+3087321ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 442368 
+3089231ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 458752 
+3091138ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 475136 
+3093048ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 491520 
+3094918ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 507904 
+3096791ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 524288 
+3098699ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 540672 
+3100611ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 557056 
+3102517ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 573440 
+3104426ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 589824 
+3106334ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 606208 
+3108239ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 622592 
+3110123ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 638976 
+3112032ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 655360 
+3113942ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 671744 
+3115815ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 688128 
+3117690ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 704512 
+3119564ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 720896 
+3121437ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 737280 
+3123312ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 753664 
+3125256ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 770048 
+3127165ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 786432 
+3129072ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 802816 
+3130984ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 819200 
+3132890ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 835584 
+3134800ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 851968 
+3136707ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 868352 
+3138618ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 884736 
+3140528ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 901120 
+3142437ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 917504 
+3144313ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 933888 
+3146187ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 950272 
+3148063ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 966656 
+3149936ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 983040 
+3151810ms th_a       block_tests.cpp:280           test_method          ] db.head_block_num(): 999424 
+3206975ms th_a       block_tests.cpp:492           test_method          ] 10 assert_exception: Assert Exception
+cashback_vb: 
+    {}
+    th_a  account_object.hpp:188 cashback_balance
+unknown location(0): fatal error in "bulk_discount": unknown type
+/build/graphene/tests/common/database_fixture.cpp(197): last checkpoint
+
+*** 2 failures detected in test suite "Master Test Suite"

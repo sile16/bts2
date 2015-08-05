@@ -1,0 +1,5 @@
+Random number generator seeded to 1438721855
+3466321ms th_a       performance_tests.cpp:29      test_method          ] (100000.0*1000000.0) / elapsed.count(): 9348.73618642427027225 
+Running 1 test case...
+
+*** No errors detected

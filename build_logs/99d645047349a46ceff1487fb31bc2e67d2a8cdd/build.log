@@ -1,0 +1,148 @@
+Number of arguments: 2 arguments.
+Argument List: ['/build.py', '99d645047349a46ceff1487fb31bc2e67d2a8cdd']
+Fetching submodule docs
+Fetching submodule libraries/fc
+Fetching submodule libraries/fc/vendor/secp256k1-zkp
+Fetching submodule libraries/fc/vendor/websocketpp
+Previous HEAD position was 8a8130f... Fix genesis init bug; #17
+HEAD is now at 99d6450... [GUI] Implement transaction broadcasting
+-- Using custom FindBoost.cmake
+-- Boost version: 1.57.0
+-- Found the following Boost libraries:
+--   thread
+--   date_time
+--   system
+--   filesystem
+--   program_options
+--   signals
+--   serialization
+--   chrono
+--   unit_test_framework
+--   context
+--   locale
+-- Using custom FindBoost.cmake
+-- Boost version: 1.57.0
+-- Found the following Boost libraries:
+--   coroutine
+-- Configuring Graphene on Linux
+-- Using  as BerkeleyDB root
+-- Looking for: db_cxx-6.0
+-- debug/usr/lib/x86_64-linux-gnu/libdb_cxx.sooptimized/usr/lib/x86_64-linux-gnu/libdb_cxx.so
+-- Configuring project fc located in: /build/graphene/libraries/fc
+-- Configuring fc to build on Unix/Apple
+-- Using custom FindBoost.cmake
+-- Boost version: 1.57.0
+-- Found the following Boost libraries:
+--   thread
+--   date_time
+--   system
+--   filesystem
+--   program_options
+--   signals
+--   serialization
+--   chrono
+--   unit_test_framework
+--   context
+--   locale
+--   iostreams
+--   coroutine
+* C++11 support partially enabled due to GCC version 4.8
+
+-- -- Using BOOST_ROOT
+--        "/usr/local/"
+* Configuring Boost
+-- Using custom FindBoost.cmake
+-- -- Include Directories
+--        /usr/local/include
+-- -- Library Directories
+--        /usr/local/lib
+-- -- Libraries
+--        /usr/local/lib/libboost_system.so
+--        /usr/local/lib/libboost_thread.so
+--        /usr/lib/x86_64-linux-gnu/libpthread.so
+
+** websocketpp
+CMake Warning (dev) at libraries/fc/vendor/websocketpp/CMakeLists.txt:229 (add_subdirectory):
+  The source directory
+
+    /build/graphene/libraries/fc/vendor/websocketpp/test
+
+  does not contain a CMakeLists.txt file.
+
+  CMake does not support this case but it used to work accidentally and is
+  being allowed for compatibility.
+
+  Policy CMP0014 is not set: Input directories must have CMakeLists.txt.  Run
+  "cmake --help-policy CMP0014" for policy details.  Use the cmake_policy
+  command to set the policy and suppress this warning.
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+
+=========== Used Build Configuration =============
+
+
+
+
+-- ENABLE_CPP11        = ON
+-- BUILD_EXAMPLES      = OFF
+-- BUILD_TESTS         = true
+-- WEBSOCKETPP_ROOT    = /build/graphene/libraries/fc/vendor/websocketpp
+-- WEBSOCKETPP_BIN     = /build/graphene/libraries/fc/vendor/websocketpp/bin
+-- WEBSOCKETPP_LIB     = /build/graphene/libraries/fc/vendor/websocketpp/lib
+-- Install prefix      = /usr/local
+-- WEBSOCKETPP_BOOST_LIBS        = system;thread
+-- WEBSOCKETPP_PLATFORM_LIBS     = pthread;rt
+-- WEBSOCKETPP_PLATFORM_TSL_LIBS = 
+-- Finished fc module configuration...
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /build/graphene
+[  4%] Built target project_secp256k1
+[ 10%] Built target udt
+[ 46%] Built target fc
+[ 46%] Built target api
+[ 47%] Built target blind
+[ 47%] Built target bloom_test
+[ 47%] Built target ecc_test
+[ 47%] [ 48%] Built target ntp_test
+Built target real128_test
+[ 48%] Built target task_cancel_test
+[ 49%] Built target udt_client
+[ 49%] Built target udt_server
+[ 50%] Built target deterministic_openssl_rand
+[ 55%] [ 56%] Built target all_tests
+Scanning dependencies of target graphene_utilities
+Built target graphene_time
+[ 57%] Built target graphene_db
+[ 57%] Building CXX object libraries/utilities/CMakeFiles/graphene_utilities.dir/git_revision.cpp.o
+Linking CXX static library libgraphene_utilities.a
+[ 59%] Built target graphene_utilities
+[ 61%] Built target graphene_net
+[ 81%] Built target graphene_chain
+[ 82%] Built target size_checker
+[ 83%] Built target graphene_market_history
+Scanning dependencies of target graphene_app
+[ 84%] Building CXX object libraries/app/CMakeFiles/graphene_app.dir/api.cpp.o
+Linking CXX static library libgraphene_app.a
+[ 85%] Built target graphene_app
+[ 86%] Generating api_documentation.cpp
+[ 86%] [ 87%] Built target graphene_account_history
+Built target graphene_witness
+Linking CXX executable app_test
+Linking CXX executable chain_bench
+[ 87%] Generating api_documentation.cpp
+[ 88%] Built target graphene_wallet
+Linking CXX executable chain_test
+Linking CXX executable intense_test
+[ 89%] Built target app_test
+Linking CXX executable performance_test
+[ 90%] Built target intense_test
+[ 92%] Built target chain_bench
+Linking CXX executable cli_wallet
+Linking CXX executable witness_node
+[ 97%] Built target chain_test
+Linking CXX executable js_operation_serializer
+[ 98%] Built target js_operation_serializer
+[ 98%] Built target cli_wallet
+[ 99%] Built target witness_node
+[100%] Built target performance_test
