@@ -55,17 +55,24 @@ def build_docker(tag):
 
     for d in docker_bins:
        d_dir = os.path.join(docker_dir,d)
-       bin_file = os.path.join(bin_dir, docker_bins[d], docker_bins[d])
-       print 'bin_file:%s d_dir:%s' % (bin_file,d_dir)
-       shutil.copyfile(bin_file,d_dir)
+       bin_file_src = os.path.join(bin_dir, docker_bins[d], docker_bins[d])
+       bin_file_dst = os.path.join(d_dir,docker_bins[d])
+       print 'bin_file:%s d_dir:%s' % (bin_file_src,d_dir)
+       shutil.copyfile(bin_file_src,bin_file_dst)
+
+       #commands for updating the root image
        cmds = [ 
          'docker build -t sile16/%s %s' % (d, d_dir),
-         'docker push sile16/%s' % (d),
-         'docker tag sile16/%s sile16/%s:%s' % (d,d,tag),
-         'docker push sile16/%s:%s' % (d,tag) ]
+         'docker push sile16/%s:latest' % (d)]
+
+       #commands for also taggin this image
+       if(tag):
+         cmds.append('docker tag sile16/%s sile16/%s:%s' % (d,d,tag))
+         cmds.append('docker push sile16/%s:%s' % (d,tag) )
+
        for c in cmds:
-           print 'running: %s' % cmd
-           call(cmd.split())
+           print 'running: %s' % c
+           call(c.split())
        
 
     #call('docker build -t sile16/graphene-witness graphene-witness'.split())
@@ -73,7 +80,7 @@ def build_docker(tag):
     #call(str('docker tag sile16/graphene-witness sile16/graphene-witness:'+str(tag)).split())
     #call(str('docker push sile16/graphene-witness:'+str(tag)).split())
 
-def build(commit, tag = None ):
+def build(commit, tag = None, last = False ):
     global state
     sha = commit.sha
 
@@ -106,8 +113,14 @@ def build(commit, tag = None ):
         run_tests(sha)
         
         #if it's a tag lets make a link and push a docker runtime image
-        if(tag or True):
+        td = datetime.datetime.now() - state['docker_push_date']
+        if(tag or td.days > 1):
             build_docker(tag)
+            state['docker_push_date'] = datetime.datetime.now()
+            state['commits'][sha]['docker'] = datetime.datetime.now()
+            save_state()
+            
+            
     
 def check_github(repo):
     global state
@@ -119,12 +132,14 @@ def check_github(repo):
         if t.name not in state['tags']:
             print("Found new tag, building: " + str(t.name))
             commit = repo.get_commit(t.commit.sha)
-            build(commit, t.name)
-
+            build(commit, tag=t.name)
+    
     #look for new commits
     print("looking for new commits")
     commits = list(repo.get_commits( since=state['last_commit_date'] ))
-    sorted_commits  = sorted(commits, key=lambda k: k.commit.author.date)
+    
+    #go newest to oldest
+    sorted_commits  = sorted(commits, key=lambda k: k.commit.author.date, reverse=True)
     for c in sorted_commits: 
         print "%s : %s : %s" % (c.sha, c.commit.author.name, c.commit.author.date)
         if c.sha not in state['commits']:
@@ -142,9 +157,10 @@ def main():
         state = {'last_commit_date': datetime.datetime.now() - datetime.timedelta(hours = 96) }
         state['tags'] = {}
         state['commits'] = {}
+        state['docker_push_date'] = datetime.datetime.now() - datetime.timedelta(days=100)
 
     #pop off a build to rebuild for testing
-    state['commits'].pop('13d83904c9e063b2a22cbfc717e988bab1215505')
+    #state['commits'].pop('13d83904c9e063b2a22cbfc717e988bab1215505')
 
     #Setup github and read api key from file '~/github_api.key'
     with open (github_api_key_file, "r") as f:
