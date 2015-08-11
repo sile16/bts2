@@ -9,10 +9,13 @@ import time
 import sys
 from subprocess import call
 import shutil
+import makeweb
 
 cur_dir = os.path.dirname(os.path.realpath(__file__))
 home_dir = os.path.expanduser("~")
 git_dir = '/tmp'
+lftp_cmds_file = '/root/sync_bts2edcrypto'
+
 
 docker_cmd = 'docker run --rm -v '+git_dir+':/build sile16/graphene-build '
 
@@ -119,6 +122,8 @@ def build(commit, tag = None, last = False ):
             state['docker_push_date'] = datetime.datetime.now()
             state['commits'][sha]['docker'] = datetime.datetime.now()
             save_state()
+        
+    makeweb.make_web()
             
             
     
