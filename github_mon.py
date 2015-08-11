@@ -101,8 +101,11 @@ def build(commit, tag = None, last = False ):
     
     #actually run the build
     logfile = os.path.join(log_dir,sha,'build.log')  
+    rc = {}
     with open(logfile, "w") as f:     
-        rc = call(cmd.split(),stdout=f, stderr=f)
+        rc['cli'] = call(cmd.split()+['--make_cli_wallet'],stdout=f, stderr=f)
+        rc['witness'] = call(cmd.split()+['--make_witness_node'],stdout=f, stderr=f)
+        rc['tests'] = call(cmd.split()+['--make_tests'],stdout=f, stderr=f)
 
     #save build results
     raw_commit = commit.raw_data
@@ -112,9 +115,10 @@ def build(commit, tag = None, last = False ):
     save_state()
 
     #If build is success run tests
-    if(rc == 0):
+    if(rc['tests'] == 0):
         run_tests(sha)
-        
+    
+    if rc['cli'] == 0 and rc['witness'] == 0 :
         #if it's a tag lets make a link and push a docker runtime image
         td = datetime.datetime.now() - state['docker_push_date']
         if(tag or td.days > 1):
@@ -159,10 +163,13 @@ def main():
         with open(state_file,'rb') as f:
             state = pickle.load(f)
     else:
-        state = {'last_commit_date': datetime.datetime.now() - datetime.timedelta(hours = 96) }
+        #state = {'last_commit_date': datetime.datetime.now() - datetime.timedelta(hours = 96) }
+        state = {}
+        #commit from which build was fixed.
+        state['last_commit_date'] = datetime.datetime(2015,8,10,16)
         state['tags'] = {}
         state['commits'] = {}
-        state['docker_push_date'] = datetime.datetime.now() - datetime.timedelta(days=100)
+        state['docker_push_date'] = datetime.datetime(2015,8,1)
 
     #pop off a build to rebuild for testing
     #state['commits'].pop('13d83904c9e063b2a22cbfc717e988bab1215505')

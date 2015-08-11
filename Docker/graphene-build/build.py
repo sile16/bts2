@@ -2,6 +2,7 @@
 
 import sys
 import os
+import subprocess
 from subprocess import call
 import argparse
 
@@ -53,22 +54,23 @@ def main():
 
     if args.devshares:
         path = os.path.join(local_path,'devshares')
-        git_path = git_devshares
+        git_url = git_devshares
     
     if (not os.path.isdir(path)) or os.listdir(path) == [] :
         #Path doesn't exist, or it does but it's empty lets clone graphene into there
-        os.chdir('/build')
+        os.chdir(local_path)
         call( ['/usr/bin/git','clone',git_url] )
     
     else:
         #Path does exist and has files
         #lets make sure it's a git repo and points to the correct remote repo
+        os.chdir(path)
         try:
             out = subprocess.check_output(['/usr/bin/git','remote','-v'])
-        except subprocess.CalledProcessError as grepexc:
+        except subprocess.CalledProcessError as gitexec:
             #git returned an error code, not a valid git repo
             print "Git Error, point the build to an empty folder or one with a valid git repo"
-            print "Git error: ", grepexc.returncode, grepexc.output
+            print "Git error: ", gitexec.returncode, gitexec.output
             usage(parser) 
 
         if git_url not in out:    
@@ -113,7 +115,7 @@ def main():
     cmd = ['/usr/bin/make','-j4']
 
     if args.make_args:
-        cmd += make_args
+        cmd += args.make_args
 
     print(cmd)
     exit( call(cmd) )
