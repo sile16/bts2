@@ -65,9 +65,8 @@ def delete_bins():
 
 def docker_push(tag):
     global state
-    #if it's a tag lets make a link and push a docker runtime image
     td = datetime.datetime.now() - state['docker_push_date']
-    print("tag: %s td.days: %d" % (tag, td.days))
+    #print("tag: %s td.days: %d" % (tag, td.days))
     
     if tag or td.days > 0:
         docker_dir = os.path.join(cur_dir,'Docker')
@@ -110,6 +109,7 @@ def docker_build(tag):
            pass
        print 'bin_file:%s d_dir:%s' % (bin_file_src,d_dir)
        shutil.copyfile(bin_file_src,bin_file_dst)
+       os.chmod(bin_file_dst,493)  #755 in octocal is 493 is base 10
 
        #commands for updating the root image
        cmd = 'docker build -t sile16/%s %s' % (d, d_dir)
@@ -149,7 +149,7 @@ def build(commit, tag = None, last = False ):
     #save build results
     raw_commit = commit.raw_data
     raw_commit.pop('files')
-    state['commits'][sha] = {'rc':rc, 'commit':commit}
+    state['commits'][sha] = {'rc':rc, 'commit':commit, 'tag':tag}
     if commit.commit.author.date > state['last_commit_date']:
         state['last_commit_sha']  = sha    
         state['last_commit_date'] = commit.commit.author.date
@@ -176,7 +176,7 @@ def check_github(repo):
     global state
 
     #Look for unbuilt tags
-    print ("Looking for new tags")
+    #print ("Looking for new tags")
     tags = list(repo.get_tags())
     for t in tags:
         if t.name not in state['tags']:
@@ -185,15 +185,15 @@ def check_github(repo):
             build(commit, tag=t.name)
     
     #look for new commits
-    print("looking for new commits")
+    #print("looking for new commits")
     commits = list(repo.get_commits( since=state['last_commit_date'] ))
     
     #go newest to oldest
     sorted_commits  = sorted(commits, key=lambda k: k.commit.author.date, reverse=True)
     for c in sorted_commits: 
-        print "%s : %s : %s" % (c.sha, c.commit.author.name, c.commit.author.date)
         if c.sha not in state['commits']:
             print("Found new commit, building: " + str(c.sha))
+            print "%s : %s : %s" % (c.sha, c.commit.author.name, c.commit.author.date)
             build(c)
 
     #check to see if it's been 24 hours last last docker_push
@@ -212,7 +212,7 @@ def main():
         #state = {'last_commit_date': datetime.datetime.now() - datetime.timedelta(hours = 96) }
         state = {}
         #commit from which build was fixed.
-        state['last_commit_date'] = datetime.datetime(2015,8,10,16)
+        state['last_commit_date'] = datetime.datetime(2015,8,8,0)
         state['tags'] = {}
         state['commits'] = {}
         state['docker_build_date'] = datetime.datetime(2015,8,1)
@@ -231,10 +231,8 @@ def main():
     #loop forever, check every 5 minutes for changes
     while True:
        check_github(repo)
-       for x in range(1,30):
-           time.sleep(10)
-           sys.stdout.write('.')
-           sys.stdout.flush()
+       sys.stdout.write('.')
+       time.sleep(300)
 
 
 if __name__ == "__main__":

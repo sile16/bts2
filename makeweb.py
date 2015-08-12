@@ -13,7 +13,7 @@ from subprocess import call
 def make_html(state,html_file):
     #make build_status.html 
     print "making the html code"
-    print state
+    #print state
     #sorted_commits  = sorted(state['commits'], key=lambda k: k['commit'].commit.author.date, reverse=True)    
 
     with open(html_file,'w') as f:
