@@ -42,9 +42,8 @@ def main():
     #being accepted and then used in a call function from a security point of view.  Not sure how this will be
     #potentially used up stream...
     parser.add_argument('--make_all', dest='make_args', action='append_const', const='all', help='specify make target of all (Default targets defined by the Makefile)')
-    parser.add_argument('--make_tests', dest='make_args', action='append_const', const='all_tests', help='only build tests and other targets specified')
     parser.add_argument('--make_cli_wallet', dest='make_args', action='append_const', const='cli_wallet', help='only build wallet and other targets specified')
-    parser.add_argument('--make_witness', dest='make_args', action='append_const', const='witness_node', help='only build witness and other targets specified')
+    parser.add_argument('--make_witness_node', dest='make_args', action='append_const', const='witness_node', help='only build witness and other targets specified')
 
     args = parser.parse_args()
 
@@ -59,6 +58,7 @@ def main():
     if (not os.path.isdir(path)) or os.listdir(path) == [] :
         #Path doesn't exist, or it does but it's empty lets clone graphene into there
         os.chdir(local_path)
+        print("running %s" % str(['/usr/bin/git','clone',git_url]))
         call( ['/usr/bin/git','clone',git_url] )
     
     else:
@@ -66,6 +66,7 @@ def main():
         #lets make sure it's a git repo and points to the correct remote repo
         os.chdir(path)
         try:
+            print("running ['/usr/bin/git','remote','-v']")
             out = subprocess.check_output(['/usr/bin/git','remote','-v'])
         except subprocess.CalledProcessError as gitexec:
             #git returned an error code, not a valid git repo
@@ -83,23 +84,28 @@ def main():
 
     #update all submodules    
     os.chdir(path)
+    print("running: /usr/bin/git submodule update --init --recursive")
     call( '/usr/bin/git submodule update --init --recursive'.split())
 
 
     rt=0
     if(args.sha):
         #checkout a specific sha or tag
+        print("running ['/usr/bin/git','fetch', '--recurse-submodules']")
         rt += call(['/usr/bin/git','fetch', '--recurse-submodules'])
+        print("running %s" % str(['/usr/bin/git','checkout',args.sha]) )
         rt += call(['/usr/bin/git','checkout',args.sha] )
+        print("running ['/usr/bin/git','submodule','update','--recursive']")
         rt += call(['/usr/bin/git','submodule','update','--recursive'])
     else:
         #update to latest head version of master
+        print("running /usr/bin/git pull --recurse-submodules origin master")
         rt += call( '/usr/bin/git pull --recurse-submodules origin master'.split())
         #rt += call( '/usr/bin/git submodule update --init --recursive'.split())
         #rt += call( '/usr/bin/git pull --recurse-submodules origin master'.split())
             
     if rt != 0 :
-        print ("Error updating repo")
+        print ("Error updating repo, try deleting build folder and retry")
         usage(parser)
     
     

@@ -31,6 +31,7 @@ def save_state():
     with open(state_file,'wb') as f:
         pickle.dump( state , f ) 
 
+
 def run_tests(sha):
     global state
     tests = ['app_test','chain_test', 'intense_test', 'performance_test']
@@ -48,8 +49,51 @@ def run_tests(sha):
     
     save_state()
 
+def delete_bins():
+    #cleanup binaries so on failed build old binary isn't mistakenly used.
+    programs = ['cli_wallet','witness_node']
+    tests = ['app_test','chain_test', 'intense_test', 'performance_test']
 
-def build_docker(tag):
+    files = [os.path.join(git_dir,'graphene','programs',p) for p in programs]
+    files += [os.path.join(test_dir,t) for t in tests]
+
+    for f in files:
+        try:
+            os.remove(f)
+        except OSError:
+            pass
+
+def docker_push(tag):
+    global state
+    #if it's a tag lets make a link and push a docker runtime image
+    td = datetime.datetime.now() - state['docker_push_date']
+    print("tag: %s td.days: %d" % (tag, td.days))
+    
+    if tag or td.days > 0:
+        docker_dir = os.path.join(cur_dir,'Docker')
+        dockers = ['graphene-cli','graphene-witness']
+
+        for d in dockers:
+           #commands for updating the root image
+           cmds = [ 'docker push sile16/%s' % (d)]
+
+           #commands for also taggin this image
+           if(tag):
+               cmds.append('docker tag sile16/%s sile16/%s:%s' % (d,d,tag))
+               cmds.append('docker push sile16/%s:%s' % (d,tag) )
+
+           for c in cmds:
+               print 'running: %s' % c
+               call(c.split())
+
+        sha = state['docker_build_sha']
+        state['commits'][sha]['docker_push_date'] = datetime.datetime.now()
+        state['docker_push_date'] = datetime.datetime.now()
+        save_state()
+
+
+def docker_build(tag):
+    global state
     bin_dir = os.path.join(git_dir,'graphene/programs')
     docker_dir = os.path.join(cur_dir,'Docker')
 
@@ -60,29 +104,21 @@ def build_docker(tag):
        d_dir = os.path.join(docker_dir,d)
        bin_file_src = os.path.join(bin_dir, docker_bins[d], docker_bins[d])
        bin_file_dst = os.path.join(d_dir,docker_bins[d])
+       try:
+           os.remove(bin_file_dst)
+       except OSError:
+           pass
        print 'bin_file:%s d_dir:%s' % (bin_file_src,d_dir)
        shutil.copyfile(bin_file_src,bin_file_dst)
 
        #commands for updating the root image
-       cmds = [ 
-         'docker build -t sile16/%s %s' % (d, d_dir),
-         'docker push sile16/%s:latest' % (d)]
+       cmd = 'docker build -t sile16/%s %s' % (d, d_dir)
 
-       #commands for also taggin this image
-       if(tag):
-         cmds.append('docker tag sile16/%s sile16/%s:%s' % (d,d,tag))
-         cmds.append('docker push sile16/%s:%s' % (d,tag) )
+       print 'running: %s' % cmd
+       call(cmd.split())
 
-       for c in cmds:
-           print 'running: %s' % c
-           call(c.split())
+    docker_push(tag)
        
-
-    #call('docker build -t sile16/graphene-witness graphene-witness'.split())
-    #call('docker push sile16/graphene-witness'.split())
-    #call(str('docker tag sile16/graphene-witness sile16/graphene-witness:'+str(tag)).split())
-    #call(str('docker push sile16/graphene-witness:'+str(tag)).split())
-
 def build(commit, tag = None, last = False ):
     global state
     sha = commit.sha
@@ -98,34 +134,39 @@ def build(commit, tag = None, last = False ):
         cmd = docker_cmd + tag
     else: 
         cmd = docker_cmd + sha
+
+    #delete existing binaries
+    delete_bins()
     
     #actually run the build
     logfile = os.path.join(log_dir,sha,'build.log')  
     rc = {}
-    with open(logfile, "w") as f:     
-        rc['cli'] = call(cmd.split()+['--make_cli_wallet'],stdout=f, stderr=f)
-        rc['witness'] = call(cmd.split()+['--make_witness_node'],stdout=f, stderr=f)
-        rc['tests'] = call(cmd.split()+['--make_tests'],stdout=f, stderr=f)
+    with open(logfile, "w") as f:
+        rc['cli']     = call(str(cmd + ' --make_cli').split(),stdout=f,stderr=f)      
+        rc['witness'] = call(str(cmd + ' --make_witness').split(),stdout=f,stderr=f)      
+        rc['tests']   = call(cmd.split(),stdout=f,stderr=f)      
 
     #save build results
     raw_commit = commit.raw_data
     raw_commit.pop('files')
     state['commits'][sha] = {'rc':rc, 'commit':commit}
-    state['last_commit_date'] = commit.commit.author.date
+    if commit.commit.author.date > state['last_commit_date']:
+        state['last_commit_sha']  = sha    
+        state['last_commit_date'] = commit.commit.author.date
     save_state()
 
+    print("return codes: %s" % (str(rc)))
     #If build is success run tests
     if(rc['tests'] == 0):
         run_tests(sha)
     
+    #docker build
     if rc['cli'] == 0 and rc['witness'] == 0 :
-        #if it's a tag lets make a link and push a docker runtime image
-        td = datetime.datetime.now() - state['docker_push_date']
-        if(tag or td.days > 1):
-            build_docker(tag)
-            state['docker_push_date'] = datetime.datetime.now()
-            state['commits'][sha]['docker'] = datetime.datetime.now()
-            save_state()
+        if tag or commit.commit.author.date > state['docker_build_date']:
+            #need to set sha and commit date as used by docker_push
+            state['docker_build_sha']  = sha    
+            state['docker_build_date'] = commit.commit.author.date
+            docker_build(tag)
         
     makeweb.make_web()
             
@@ -155,6 +196,11 @@ def check_github(repo):
             print("Found new commit, building: " + str(c.sha))
             build(c)
 
+    #check to see if it's been 24 hours last last docker_push
+    docker_push(None)
+    
+
+
 
 def main():
     global state
@@ -169,6 +215,7 @@ def main():
         state['last_commit_date'] = datetime.datetime(2015,8,10,16)
         state['tags'] = {}
         state['commits'] = {}
+        state['docker_build_date'] = datetime.datetime(2015,8,1)
         state['docker_push_date'] = datetime.datetime(2015,8,1)
 
     #pop off a build to rebuild for testing
