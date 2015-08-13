@@ -39,7 +39,7 @@ def run_tests(sha):
 
     for t in tests:
         cmd = os.path.join(test_dir,t)
-        with open(os.path.join(log_dir,sha,t+'.log'), "w") as f:     
+        with open(os.path.join(log_dir,sha,t+'.txt'), "w") as f:     
             start = time.time()
             rc = call(cmd.split(),stdout=f, stderr=f)
             duration = time.time() - start
@@ -67,7 +67,12 @@ def docker_push(tag):
     global state
     td = datetime.datetime.now() - state['docker_push_date']
     #print("tag: %s td.days: %d" % (tag, td.days))
-    
+
+    #check to see if this build has already been pushed
+    sha = state['docker_build_sha']
+    if 'docker_push_date' in state['commits'][sha]:
+        return
+
     if tag or td.days > 0:
         docker_dir = os.path.join(cur_dir,'Docker')
         dockers = ['graphene-cli','graphene-witness']
@@ -85,7 +90,6 @@ def docker_push(tag):
                print 'running: %s' % c
                call(c.split())
 
-        sha = state['docker_build_sha']
         state['commits'][sha]['docker_push_date'] = datetime.datetime.now()
         state['docker_push_date'] = datetime.datetime.now()
         save_state()
@@ -139,7 +143,7 @@ def build(commit, tag = None, last = False ):
     delete_bins()
     
     #actually run the build
-    logfile = os.path.join(log_dir,sha,'build.log')  
+    logfile = os.path.join(log_dir,sha,'build.txt')  
     rc = {}
     with open(logfile, "w") as f:
         rc['cli']     = call(str(cmd + ' --make_cli').split(),stdout=f,stderr=f)      
@@ -150,9 +154,9 @@ def build(commit, tag = None, last = False ):
     raw_commit = commit.raw_data
     raw_commit.pop('files')
     state['commits'][sha] = {'rc':rc, 'commit':commit, 'tag':tag}
-    if commit.commit.author.date > state['last_commit_date']:
+    if commit.commit.committer.date > state['last_commit_date']:
         state['last_commit_sha']  = sha    
-        state['last_commit_date'] = commit.commit.author.date
+        state['last_commit_date'] = commit.commit.committer.date
     save_state()
 
     print("return codes: %s" % (str(rc)))
@@ -162,10 +166,10 @@ def build(commit, tag = None, last = False ):
     
     #docker build
     if rc['cli'] == 0 and rc['witness'] == 0 :
-        if tag or commit.commit.author.date > state['docker_build_date']:
+        if tag or commit.commit.committer.date > state['docker_build_date']:
             #need to set sha and commit date as used by docker_push
             state['docker_build_sha']  = sha    
-            state['docker_build_date'] = commit.commit.author.date
+            state['docker_build_date'] = commit.commit.committer.date
             docker_build(tag)
         
     makeweb.make_web()
@@ -189,11 +193,11 @@ def check_github(repo):
     commits = list(repo.get_commits( since=state['last_commit_date'] ))
     
     #go newest to oldest
-    sorted_commits  = sorted(commits, key=lambda k: k.commit.author.date, reverse=True)
+    sorted_commits  = sorted(commits, key=lambda k: ( k.commit.committer.date, k.commit.author.date) , reverse=True)
     for c in sorted_commits: 
         if c.sha not in state['commits']:
             print("Found new commit, building: " + str(c.sha))
-            print "%s : %s : %s" % (c.sha, c.commit.author.name, c.commit.author.date)
+            print "%s : %s : %s" % (c.sha, c.commit.author.name, c.commit.committer.date)
             build(c)
 
     #check to see if it's been 24 hours last last docker_push
@@ -219,7 +223,10 @@ def main():
         state['docker_push_date'] = datetime.datetime(2015,8,1)
 
     #pop off a build to rebuild for testing
-    #state['commits'].pop('13d83904c9e063b2a22cbfc717e988bab1215505')
+    #state['commits'].pop('dffd010e8a40fa08f25fd5c39c35248670031f33')
+    #state['docker_push_date'] = datetime.datetime(2015,8,1)
+    #state['last_commit_date'] = datetime.datetime(2015,8,8,0)
+    
 
     #Setup github and read api key from file '~/github_api.key'
     with open (github_api_key_file, "r") as f:

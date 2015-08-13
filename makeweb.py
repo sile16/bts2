@@ -28,8 +28,14 @@ def make_html(state,html_file):
 
     with open(html_file,'w') as f:
         f.write('<table>')
-        headers(f,['commit','author dt','commit dt','Docker Date','test:app', 'test:chain', 'test:intense', 'test:perf','avatar','author','msg','logs'])
-        for sha in state['commits']:
+        headers(f,['commit','tag','commit','author','Docker Date','app', 'chain', 'intense', 'perf','avatar','author','msg','logs'])
+        f.write('<tr><td colspan=5/><td colspan=4>Test Duration (s)</td></tr>')
+
+        sorted_commits  = sorted(state['commits'], 
+                                 key=lambda k: ( state['commits'][k]['commit'].commit.committer.date,
+                                                 state['commits'][k]['commit'].commit.author.date ), 
+                                 reverse=True)
+        for sha in sorted_commits:
             build = state['commits'][sha]
             c = build['commit']
             f.write('<tr>')
@@ -47,8 +53,9 @@ def make_html(state,html_file):
             
    
             cell(f,build_color,'<a href="%s">%s</a>' % (c.html_url, sha[0:7]) )
-            cell(f,build_color,c.commit.author.date )
+            cell(f,build_color,build['tag'])
             cell(f,build_color,c.commit.committer.date )
+            cell(f,build_color,c.commit.author.date )
             cell(f,build_color,push_date)            
 
             if 'tests' in build:
