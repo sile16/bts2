@@ -28,8 +28,8 @@ def make_html(state,html_file):
 
     with open(html_file,'w') as f:
         f.write('<table>')
-        headers(f,['commit','tag','commit','author','Docker Date','app', 'chain', 'intense', 'perf','avatar','author','msg','logs'])
-        f.write('<tr><td colspan=5/><td colspan=4>Test Duration (s)</td></tr>')
+        headers(f,['Tag (sha)','commit','author','Docker Date','app', 'chain', 'intense', 'perf','avatar','author','msg','logs'])
+        f.write('<tr><td colspan=5/><td colspan=4>Test Duration (s) or Fail</td></tr>')
 
         sorted_commits  = sorted(state['commits'], 
                                  key=lambda k: ( state['commits'][k]['commit'].commit.committer.date,
@@ -51,32 +51,35 @@ def make_html(state,html_file):
             else:
                 build_color = 'OrangRed'
             
-   
-            cell(f,build_color,'<a href="%s">%s</a>' % (c.html_url, sha[0:7]) )
-            cell(f,build_color,build['tag'])
-            cell(f,build_color,c.commit.committer.date.strftime("%y-%m-%d %H:%M"))
-            cell(f,build_color,c.commit.author.date.strftime("%y-%m-%d %H:%M"))
-            cell(f,build_color,push_date.strftime("%y-%m-%d %H:%M"))            
+            if build['tag']:
+                tag = '{} ({})'.format(build['tag'],sha[0:5])
+            else:
+                tag = sha[0:7]
+
+            cell(f,build_color,'<a href="%s">%s</a>' % (c.html_url, tag) )
+            cell(f,build_color,c.commit.committer.date.strftime("%m-%d %H:%M"))
+            cell(f,build_color,c.commit.author.date.strftime("%m-%d %H:%M"))
+            cell(f,build_color,push_date.strftime("%m-%d %H:%M") if push_date else "None")            
 
             if 'tests' in build:
                 for t in sorted(build['tests']):
-                    test_log_file = str(sha + '/' + t + '.txt'
+                    test_log_file = str(sha + '/' + t + '.txt')
                     
                     if build['tests'][t]['rc'] == 0:
                         t_color = 'LightGreen'
-                        msg = build['tests'][t]['duration']
+                        msg = "{:.1f}s".format(build['tests'][t]['duration'])
                     else:
                         t_color = 'OrangeRed'
                         log_dir = os.path.dirname(html_file)
                         last_line = ""
-                        msg = "failed"
+                        msg = "-- failed"
                         with open(os.path.join(log_dir,test_log_file)) as test_f:
                             for line in test_f:
                                 last_line = line
                         if '***' in last_line:
                             msg = last_line.split()[1] + ' failed'
                     
-                    cell(f,t_color, '<a href="{}">{:.1f}</a>'.format(test_log_file, msg ) 
+                    cell(f,t_color, '<a href="{}">{}</a>'.format(test_log_file, msg ))
             else:
                 cell(f,'OrangeRed',"--")
                 cell(f,'OrangeRed',"--")

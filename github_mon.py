@@ -23,6 +23,9 @@ log_dir = os.path.join(cur_dir,'build_logs/')
 state_file = os.path.join(log_dir,'build_state.pkl')
 test_dir = os.path.join(git_dir,'graphene/tests')
 github_api_key_file = os.path.join(home_dir,'github_api.key')
+docker_username = 'sile16'
+docker_api_key_file = os.path.join(home_dir,'docker_api.key')
+
 
 state = {}
 
@@ -65,7 +68,7 @@ def delete_bins():
 
 def docker_push(tag):
     global state
-    td = datetime.datetime.now() - state['docker_push_date']
+    #td = datetime.datetime.now() - state['docker_push_date']
     #print("tag: %s td.days: %d" % (tag, td.days))
 
     #check to see if this build has already been pushed
@@ -73,27 +76,36 @@ def docker_push(tag):
     if 'docker_push_date' in state['commits'][sha]:
         return
 
-    if tag or td.days > 0:
-        docker_dir = os.path.join(cur_dir,'Docker')
-        dockers = ['graphene-cli','graphene-witness']
+    docker_dir = os.path.join(cur_dir,'Docker')
+    dockers = ['graphene-cli','graphene-witness']
 
-        for d in dockers:
-           #commands for updating the root image
-           cmds = [ 'docker push sile16/%s' % (d)]
+    with open (docker_api_key_file, "r") as f:
+        docker_api_key = f.read().replace('\n','') 
 
-           #commands for also taggin this image
-           if(tag):
-               cmds.append('docker tag sile16/%s sile16/%s:%s' % (d,d,tag))
-               cmds.append('docker push sile16/%s:%s' % (d,tag) )
+    cmd = 'docker login -u {} -p {}'.format(docker_username,docker_api_key)
+    rt = call(cmd.split())
+    if not rt == 0:
+        print ("Error logging into docker, check username or password.")
+        return
 
-           for c in cmds:
-               print 'running: %s' % c
-               call(c.split())
 
-        state['commits'][sha]['docker_push_date'] = datetime.datetime.now()
-        state['docker_push_date'] = datetime.datetime.now()
-        save_state()
-        makeweb.make_web()
+    for d in dockers:
+       #commands for updating the root image
+       cmds = [ 'docker push sile16/%s' % (d)]
+
+       #commands for also taggin this image
+       if(tag):
+           cmds.append('docker tag sile16/%s sile16/%s:%s' % (d,d,tag))
+           cmds.append('docker push sile16/%s:%s' % (d,tag) )
+
+       for c in cmds:
+           print 'running: %s' % c
+           call(c.split())
+
+    state['commits'][sha]['docker_push_date'] = datetime.datetime.now()
+    state['docker_push_date'] = datetime.datetime.now()
+    save_state()
+    makeweb.make_web()
 
 
 def docker_build(sha, tag):
@@ -103,6 +115,13 @@ def docker_build(sha, tag):
 
     docker_bins = {'graphene-cli':'cli_wallet', 
                'graphene-witness':'witness_node'}
+
+    #write commit sha and tag to a file so these can be queried by the user of image
+    with open(os.path.join(docker_dir,'build.info'),'w') as f:
+       f.write("commit sha:{}\n".format(sha))
+       f.write("commit tag:{}\n".format(str(tag)))
+       f.write("commit url:{}".format(state['commits'][sha]['commit'].html_url))
+
 
     for d in docker_bins:
        d_dir = os.path.join(docker_dir,d)
@@ -116,11 +135,6 @@ def docker_build(sha, tag):
        shutil.copyfile(bin_file_src,bin_file_dst)
        os.chmod(bin_file_dst,493)  #755 in octocal is 493 is base 10
 
-       #write commit sha and tag to a file so these can be queried by the user
-       with open(os.path.join(docker_dir,'build.info')) as f:
-           f.write("commit sha:{}\n".format(sha))
-           f.write("commit tag:{}\n".format(str(tag)))
-           f.write("commit url:{}".format(state['commits'][sha]['commit'].html_url))
        #commands for updating the root image
        cmd = 'docker build -t sile16/%s %s' % (d, d_dir)
 
@@ -207,7 +221,8 @@ def check_github(repo):
             build(c)
 
     #check to see if it's been 24 hours last last docker_push
-    docker_push(None)
+    #decided to just upload top commit for each build
+    #docker_push(None)
     
 
 
@@ -229,9 +244,10 @@ def main():
         state['docker_push_date'] = datetime.datetime(2015,8,1)
 
     #pop off a build to rebuild for testing
-    #state['commits'].pop('dffd010e8a40fa08f25fd5c39c35248670031f33')
-    #state['docker_push_date'] = datetime.datetime(2015,8,1)
-    #state['last_commit_date'] = datetime.datetime(2015,8,8,0)
+    #remove_me = '7c579f22d3f65ed449ea4ef6cd66722a014be2c6'
+    #state['commits'].pop(remove_me)
+    #state['docker_build_date'] = datetime.datetime(2015,8,11)
+    #state['last_commit_date'] = datetime.datetime(2015,8,12,0)
     
 
     #Setup github and read api key from file '~/github_api.key'
