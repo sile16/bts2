@@ -54,17 +54,29 @@ def make_html(state,html_file):
    
             cell(f,build_color,'<a href="%s">%s</a>' % (c.html_url, sha[0:7]) )
             cell(f,build_color,build['tag'])
-            cell(f,build_color,c.commit.committer.date )
-            cell(f,build_color,c.commit.author.date )
-            cell(f,build_color,push_date)            
+            cell(f,build_color,c.commit.committer.date.strftime("%y-%m-%d %H:%M"))
+            cell(f,build_color,c.commit.author.date.strftime("%y-%m-%d %H:%M"))
+            cell(f,build_color,push_date.strftime("%y-%m-%d %H:%M"))            
 
             if 'tests' in build:
                 for t in sorted(build['tests']):
+                    test_log_file = str(sha + '/' + t + '.txt'
+                    
                     if build['tests'][t]['rc'] == 0:
                         t_color = 'LightGreen'
+                        msg = build['tests'][t]['duration']
                     else:
                         t_color = 'OrangeRed'
-                    cell(f,t_color, "{:.1f}".format(build['tests'][t]['duration']) ) 
+                        log_dir = os.path.dirname(html_file)
+                        last_line = ""
+                        msg = "failed"
+                        with open(os.path.join(log_dir,test_log_file)) as test_f:
+                            for line in test_f:
+                                last_line = line
+                        if '***' in last_line:
+                            msg = last_line.split()[1] + ' failed'
+                    
+                    cell(f,t_color, '<a href="{}">{:.1f}</a>'.format(test_log_file, msg ) 
             else:
                 cell(f,'OrangeRed',"--")
                 cell(f,'OrangeRed',"--")
@@ -74,7 +86,7 @@ def make_html(state,html_file):
             cell(f,None,'<img src="%s"/ height="42" width="42">' % c.author.avatar_url )
             cell(f,build_color,c.commit.author.name)
             cell(f,build_color,c.commit.message )
-            cell(f,build_color,'<a href="%s">logs</a>' % sha) 
+            cell(f,build_color,'<a href="%s/build.txt">logs</a>' % sha) 
                 
             f.write('</tr>')
 

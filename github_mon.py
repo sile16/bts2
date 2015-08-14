@@ -93,9 +93,10 @@ def docker_push(tag):
         state['commits'][sha]['docker_push_date'] = datetime.datetime.now()
         state['docker_push_date'] = datetime.datetime.now()
         save_state()
+        makeweb.make_web()
 
 
-def docker_build(tag):
+def docker_build(sha, tag):
     global state
     bin_dir = os.path.join(git_dir,'graphene/programs')
     docker_dir = os.path.join(cur_dir,'Docker')
@@ -115,6 +116,11 @@ def docker_build(tag):
        shutil.copyfile(bin_file_src,bin_file_dst)
        os.chmod(bin_file_dst,493)  #755 in octocal is 493 is base 10
 
+       #write commit sha and tag to a file so these can be queried by the user
+       with open(os.path.join(docker_dir,'build.info')) as f:
+           f.write("commit sha:{}\n".format(sha))
+           f.write("commit tag:{}\n".format(str(tag)))
+           f.write("commit url:{}".format(state['commits'][sha]['commit'].html_url))
        #commands for updating the root image
        cmd = 'docker build -t sile16/%s %s' % (d, d_dir)
 
@@ -170,7 +176,7 @@ def build(commit, tag = None, last = False ):
             #need to set sha and commit date as used by docker_push
             state['docker_build_sha']  = sha    
             state['docker_build_date'] = commit.commit.committer.date
-            docker_build(tag)
+            docker_build(sha, tag)
         
     makeweb.make_web()
             
