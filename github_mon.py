@@ -105,7 +105,7 @@ def docker_push(tag):
     state['commits'][sha]['docker_push_date'] = datetime.datetime.now()
     state['docker_push_date'] = datetime.datetime.now()
     save_state()
-    makeweb.make_web()
+    #makeweb.make_web()
 
 
 def docker_build(sha, tag):
@@ -166,9 +166,9 @@ def build(commit, tag = None, last = False ):
     logfile = os.path.join(log_dir,sha,'build.txt')  
     rc = {}
     with open(logfile, "w") as f:
-        rc['cli']     = call(str(cmd + ' --make_cli').split(),stdout=f,stderr=f)      
-        rc['witness'] = call(str(cmd + ' --make_witness').split(),stdout=f,stderr=f)      
-        rc['tests']   = call(cmd.split(),stdout=f,stderr=f)      
+        rc['witness'] = call(str(cmd + ' --make-jobs 4 --make-target witness_node').split(),stdout=f,stderr=f)      
+        rc['cli']     = call(str(cmd + ' --make-jobs 4 --make-target cli_wallet').split(),stdout=f,stderr=f)      
+        rc['tests']   = call(str(cmd + ' --make-jobs 4').split(),stdout=f,stderr=f)      
 
     #save build results
     raw_commit = commit.raw_data
@@ -261,7 +261,7 @@ def main():
     while True:
        check_github(repo)
        sys.stdout.write('.')
-       time.sleep(300)
+       time.sleep(120)
 
 
 if __name__ == "__main__":

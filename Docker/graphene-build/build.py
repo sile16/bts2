@@ -5,6 +5,7 @@ import os
 import subprocess
 from subprocess import call
 import argparse
+import re
 
 
 def usage(parser):
@@ -35,17 +36,19 @@ def main():
 
     parser.add_argument('sha', type=str, nargs='?' ,help='Commit sha or master branch tag')
 
-    parser.add_argument('--build_type', choices=['Debug','Release'],default='Debug', help='Change build type')
+    parser.add_argument('--build-type' , choices=['Debug','Release'],default='Debug', help='Change build type')
     parser.add_argument('--devshares', action='store_true', help='build from devshares instead of graphene')
+    parser.add_argument('--branch', '-b', type=str, default='master', help='specify a specific branch to build from')
 
     #I decided to only program in specific make targets becuase I didn't like the idea of a command line param
     #being accepted and then used in a call function from a security point of view.  Not sure how this will be
     #potentially used up stream...
-    parser.add_argument('--make_all', dest='make_args', action='append_const', const='all', help='specify make target of all (Default targets defined by the Makefile)')
-    parser.add_argument('--make_cli_wallet', dest='make_args', action='append_const', const='cli_wallet', help='only build wallet and other targets specified')
-    parser.add_argument('--make_witness_node', dest='make_args', action='append_const', const='witness_node', help='only build witness and other targets specified')
+    parser.add_argument('--make-target', '-t' , dest='make_args', choices=['cli_wallet','witness_node','all'], help='only build specified target (default is all)')
+    parser.add_argument('--make-jobs', '-j', dest='make_jobs', type=int ,help='make: Allow N jobs at once; infinite jobs with no arg')
 
     args = parser.parse_args()
+    #print(args)
+    #exit(1)
 
     if not os.path.isdir(local_path):
         print("No build volume mounted, please us docker -v <local volume>:/build to mount a build directory to image")
@@ -55,11 +58,21 @@ def main():
         path = os.path.join(local_path,'devshares')
         git_url = git_devshares
     
+    if args.branch:
+        regex = re.compile('^[a-zA-Z0-9\-_\./]+$')
+        if not regex.match(args.branch):
+            print("Invalid branch name: {}".format(args.branch))
+            usage(parser)
+          
+
     if (not os.path.isdir(path)) or os.listdir(path) == [] :
         #Path doesn't exist, or it does but it's empty lets clone graphene into there
         os.chdir(local_path)
-        print("running %s" % str(['/usr/bin/git','clone',git_url]))
-        call( ['/usr/bin/git','clone',git_url] )
+        cmd = "/usr/bin/git clone {}".format(git_url)
+        if args.branch:
+            cmd += " -b {}".format(args.branch)
+        print("running {}".format(cmd))
+        call( cmd.split() )
     
     else:
         #Path does exist and has files
@@ -91,16 +104,22 @@ def main():
     rt=0
     if(args.sha):
         #checkout a specific sha or tag
-        print("running ['/usr/bin/git','fetch', '--recurse-submodules']")
-        rt += call(['/usr/bin/git','fetch', '--recurse-submodules'])
-        print("running %s" % str(['/usr/bin/git','checkout',args.sha]) )
-        rt += call(['/usr/bin/git','checkout',args.sha] )
-        print("running ['/usr/bin/git','submodule','update','--recursive']")
-        rt += call(['/usr/bin/git','submodule','update','--recursive'])
+        cmd = '/usr/bin/git fetch --recurse-submodules'
+        print("running {}".format(cmd))
+        rt += call(cmd.split())
+        cmd = '/usr/bin/git checkout {}'.format(args.sha)
+        if args.branch:
+            cmd += ' -b {}'.format(args.branch)
+        print("running {}".format(cmd))
+        rt += call(cmd.split())
+        cmd = '/usr/bin/git submodule update --recursive'
+        print("running {}".format(cmd))
+        rt += call(cmd.split())
     else:
-        #update to latest head version of master
-        print("running /usr/bin/git pull --recurse-submodules origin master")
-        rt += call( '/usr/bin/git pull --recurse-submodules origin master'.split())
+        #update to latest head version of branch
+        cmd = '/usr/bin/git pull --recurse-submodules origin {}'.format(args.branch)
+        print("running {}".format(cmd))
+        rt += call( cmd.split())
         #rt += call( '/usr/bin/git submodule update --init --recursive'.split())
         #rt += call( '/usr/bin/git pull --recurse-submodules origin master'.split())
             
@@ -118,10 +137,14 @@ def main():
         print("cmake failed, exiting build")
         usage(parser)
 
-    cmd = ['/usr/bin/make','-j4']
+
+    cmd = ['/usr/bin/make']
+
+    if args.make_jobs:
+        cmd += ['-j',str(args.make_jobs)]
 
     if args.make_args:
-        cmd += args.make_args
+        cmd += [args.make_args]
 
     print(cmd)
     exit( call(cmd) )

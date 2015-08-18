@@ -3,17 +3,19 @@
 import github
 import pickle
 import datetime
+from dateutil import tz
 import os.path
 import os
 import time
 import sys
 from subprocess import call
 
-def headers(f,headers):
-    f.write('<tr>')
+def headers(f,headers,span=None):
     for header in headers:
-        f.write('<th>%s</th>' % str(header) )
-    f.write('</tr>')
+        if span:     
+            f.write('<th colspan="%d">%s</th>' % (span,str(header)) )
+        else:
+            f.write('<th>%s</th>' % str(header) )
 
 def cell(f,color,msg):
     if color is None:
@@ -27,9 +29,17 @@ def make_html(state,html_file):
     #sorted_commits  = sorted(state['commits'], key=lambda k: k['commit'].commit.author.date, reverse=True)    
 
     with open(html_file,'w') as f:
-        f.write('<table>')
+        f.write('<table border="1">')
+
+        f.write('<tr>')
+        headers(f,[''],4)
+        headers(f,['Test Duration (s) or Fail'],4)
+        headers(f,[''],4)
+        f.write('</tr>\n')
+        f.write('<tr>')
         headers(f,['Tag (sha)','commit','author','Docker Date','app', 'chain', 'intense', 'perf','avatar','author','msg','logs'])
-        f.write('<tr><td colspan=5/><td colspan=4>Test Duration (s) or Fail</td></tr>')
+        f.write('</tr>\n')
+
 
         sorted_commits  = sorted(state['commits'], 
                                  key=lambda k: ( state['commits'][k]['commit'].commit.committer.date,
@@ -45,7 +55,8 @@ def make_html(state,html_file):
             if build['rc']['cli'] == 0 and build['rc']['witness'] == 0:
                if 'docker_push_date' in build:
                    build_color = 'LightGreen'
-                   push_date = build['docker_push_date']
+                   #minus 1 hour to go from CST -> EST
+                   push_date = build['docker_push_date'] - datetime.timedelta(hours=1)
                else:
                    build_color = 'AliceBlue'
             else:
@@ -56,9 +67,13 @@ def make_html(state,html_file):
             else:
                 tag = sha[0:7]
 
+            from_utc = tz.gettz('UTC')
+            to_est = tz.gettz('America/New_York')
+
+
             cell(f,build_color,'<a href="%s">%s</a>' % (c.html_url, tag) )
-            cell(f,build_color,c.commit.committer.date.strftime("%m-%d %H:%M"))
-            cell(f,build_color,c.commit.author.date.strftime("%m-%d %H:%M"))
+            cell(f,build_color,c.commit.committer.date.replace(tzinfo=from_utc).astimezone(to_est).strftime("%m-%d %H:%M"))
+            cell(f,build_color,c.commit.author.date.replace(tzinfo=from_utc).astimezone(to_est).strftime("%m-%d %H:%M"))
             cell(f,build_color,push_date.strftime("%m-%d %H:%M") if push_date else "None")            
 
             if 'tests' in build:
@@ -91,9 +106,9 @@ def make_html(state,html_file):
             cell(f,build_color,c.commit.message )
             cell(f,build_color,'<a href="%s/build.txt">logs</a>' % sha) 
                 
-            f.write('</tr>')
+            f.write('</tr>\n')
 
-        f.write('</table>')
+        f.write('</table>\n')
         
 
     
