@@ -23,6 +23,8 @@ def main():
 
     git_graphene = 'https://github.com/cryptonomex/graphene.git'
     git_devshares = 'https://github.com/bitshares/devshares.git'
+    git_bitshares = 'https://github.com/bitshares/bitsahres.git'
+
     git_url = git_graphene  #set graphene as default git_url
 
     description = '''    The script will build graphene to a specific commit or tag
@@ -37,7 +39,7 @@ def main():
     parser.add_argument('sha', type=str, nargs='?' ,help='Commit sha or master branch tag')
 
     parser.add_argument('--build-type' , choices=['Debug','Release'],default='Debug', help='Change build type')
-    parser.add_argument('--devshares', action='store_true', help='build from devshares instead of graphene')
+    parser.add_argument('--repo',choices=['graphene','devshares','bitshares'],default='graphene', help='pick repo to build')
     parser.add_argument('--branch', '-b', type=str, default='master', help='specify a specific branch to build from')
 
     #I decided to only program in specific make targets becuase I didn't like the idea of a command line param
@@ -54,9 +56,12 @@ def main():
         print("No build volume mounted, please us docker -v <local volume>:/build to mount a build directory to image")
         usage(parser)
 
-    if args.devshares:
+    if args.repo == "devshares":
         path = os.path.join(local_path,'devshares')
         git_url = git_devshares
+    else if args.repo == "bitshares":
+        path = os.path.join(local_path,'bitshares')
+        git_url = git_bitshares
     
     if args.branch:
         regex = re.compile('^[a-zA-Z0-9\-_\./]+$')
@@ -108,8 +113,6 @@ def main():
         print("running {}".format(cmd))
         rt += call(cmd.split())
         cmd = '/usr/bin/git checkout {}'.format(args.sha)
-        if args.branch:
-            cmd += ' -b {}'.format(args.branch)
         print("running {}".format(cmd))
         rt += call(cmd.split())
         cmd = '/usr/bin/git submodule update --recursive'

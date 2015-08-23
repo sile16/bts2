@@ -55,12 +55,12 @@ def make_html(state,html_file):
             if build['rc']['cli'] == 0 and build['rc']['witness'] == 0:
                if 'docker_push_date' in build:
                    build_color = 'LightGreen'
-                   #minus 1 hour to go from CST -> EST
-                   push_date = build['docker_push_date'] - datetime.timedelta(hours=1)
+                   #plus 1 hour to go from CST -> EST
+                   push_date = build['docker_push_date'] + datetime.timedelta(hours=1)
                else:
                    build_color = 'AliceBlue'
             else:
-                build_color = 'OrangRed'
+                build_color = 'OrangeRed'
             
             if build['tag']:
                 tag = '{} ({})'.format(build['tag'],sha[0:5])

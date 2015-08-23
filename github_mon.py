@@ -140,7 +140,9 @@ def docker_build(sha, tag):
 
        print 'running: %s' % cmd
        call(cmd.split())
-
+    
+    if not tag:
+        tag = sha[0:7]
     docker_push(tag)
        
 def build(commit, tag = None, last = False ):
@@ -153,7 +155,7 @@ def build(commit, tag = None, last = False ):
 
     #create symlink if a tag, and generate build cmd using sha or tag
     if tag:
-        os.symlink(os.path.join(log_dir,tag), os.path.join(log_dir,sha))
+        os.symlink(os.path.join(log_dir,sha), os.path.join(log_dir,tag))
         state['tags'][tag] = {'sha':sha }
         cmd = docker_cmd + tag
     else: 
@@ -201,7 +203,13 @@ def check_github(repo):
 
     #Look for unbuilt tags
     #print ("Looking for new tags")
-    tags = list(repo.get_tags())
+    try:
+        tags = list(repo.get_tags())
+    except:
+        e = sys.exc_info()[0]
+        print( "Error: %s" % str(e) )
+        return
+
     for t in tags:
         if t.name not in state['tags']:
             print("Found new tag, building: " + str(t.name))
@@ -243,9 +251,15 @@ def main():
         state['docker_build_date'] = datetime.datetime(2015,8,1)
         state['docker_push_date'] = datetime.datetime(2015,8,1)
 
+
     #pop off a build to rebuild for testing
-    #remove_me = '7c579f22d3f65ed449ea4ef6cd66722a014be2c6'
-    #state['commits'].pop(remove_me)
+    #remove_me = ['7e42d4b3e8f478b65956776f2654615399276e16','aa38feef62a96f388da792c1e499d06481e8e96b',
+    #             '437a112a66aa56fd3d3751599e90c2918a6e5250','80f007faeb4016108ae95703ff62373776d286b4',
+    #             'd5cc6da54a4c78f26f0fce64e3ce016101794bfe']
+    #remove_me = ['714261b02a55002f05ea647aa29ab3900b490407']
+    #for r in remove_me:
+    #    state['commits'].pop(r)
+
     #state['docker_build_date'] = datetime.datetime(2015,8,11)
     #state['last_commit_date'] = datetime.datetime(2015,8,12,0)
     
